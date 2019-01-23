@@ -1,59 +1,117 @@
 <?php
 
-/*
-順子 = 0
-刻子 = 2
+/*********************************************************
 
-暗刻 *= 2 
+麻雀点数計算ゲーム
+2019年  1月 23日 水曜日 21:48:04 JST
 
-壱九牌 *= 2 
+起動方法
+php point.php
 
-槓子 *= 4
- */
+次のように上がった状態での配牌が刻子、あるいは順子が４組
+および雀頭として表示される。
+雀頭        刻子       刻子       順子       刻子
+[断公牌:??][老暗刻:??][断明刻:??][老暗順:??][老明刻:??]
+ |          | | |
+ +-役牌     | | +--刻子or順子
+ +-断公牌   | |
+            | +----暗刻or明刻
+            |
+            +------断公牌or老頭牌
+?? の部分の点数を類推する。
+
+待ち牌、待ち方、ロン上り・自摸上りの点数を類推する。
+待ち:カンチャン待ち = ??点, 上り方:自摸 = ??点
+
+これらを全て合計して得点を計算する。
+
+  1. 基本点            20点
+  2. 雀頭              2～0点
+  3. 刻子順子慣子１    0～32点
+  4. 刻子順子慣子２    0～32点
+  5. 刻子順子慣子３    0～32点
+  6. 刻子順子慣子４    0～32点
+  7. 待ちの形上り牌    0～4点
+  8. 自摸上り          2点
+
+  最低点　２０点
+  ４組の順子、断公牌の頭、待ち牌が２つ以上、ロン上り
+
+  最高点  130 = 3 x 32 + 8 + 2 + 4 + 20
+  3組の老頭牌慣子、1組の老頭刻牌子、老頭牌の頭、単騎待ち牌、自摸上り
+
+======問題============================
+[断公牌:??][老暗刻:??][断明刻:??][老暗順:??][老明刻:??]
+待ち:カンチャン待ち = ??点, 上り方:自摸 = ??点
+      ========== 上り点は？==========
+
+======回答============================
+[断公牌:00][老暗刻:04][断明刻:04][老暗順:00][老明刻:02]
+待ち:カンチャン待ち = 2点, 上り方:自摸 = 2点
+合計:34点 = 基本点:20点 刻子:10点 雀頭:0点 待ち:2点 上り:2点
+最後に切り上げて、上り点は40点です。
+
+慣子を作ると点数を上げる効果が大きい
+例えば断公牌の暗刻を暗慣すると4点から16点になるので 12点のアップになる。
+老頭牌の暗刻を暗慣すると８点から３２点になるので実に２４点のアップになる。
+これにより一つの慣をつくるだけで上り点数を1.5倍から2倍くらいに大きくする
+ことができる。
 
 
-function koutsu($prop) {
-  $point  = $prop[  'koutsu']  ? 2 : 0;
-  $point *= $prop[   'ankou']  ? 2 : 1;
-  $point *= $prop['ichikyui']  ? 2 : 1;
-  $point *= $prop[    'kann']  ? 4 : 1;
-  return $point;
+ ***********************************************************************/
+
+
+function 刻子($prop) {
+  $得点  = $prop['刻子順子']  ? 2 : 0;
+  $得点 *= $prop['暗刻明刻']  ? 2 : 1;
+  $得点 *= $prop['老頭牌']    ? 2 : 1;
+  $得点 *= $prop['慣子']      ? 4 : 1;
+  return $得点;
 }
-function atama($prop) {
-  $point = $prop['ichikyui']  ? 2 : 0;
-  return $point;
+function 雀頭($prop) {
+  $得点 = $prop['老頭牌']  ? 2 : 0;
+  return $得点;
 }
 
-function QuizeKoutsu() {
-  foreach(range(1,8) as $k) {
+function 点数丸め($n) {
+  return round($n+4, -1);
+}
+
+function 点数計算クイズ() {
+  foreach(range(1,80) as $k) {
     $prop = [];
     $pairs= [];
-    $propAtama['ichikyui'] = rand(0,1) == 1 ? true:false;
-    $propAtama['KANJI'] = $propAtama['ichikyui'] ? '役牌':'断公牌';
-    $propAtama['tensu'] = $propAtama['ichikyui'] ? 2 : 0;
+    $propAtama['老頭牌'] = rand(0,1) == 1 ? true:false;
+    $propAtama['漢字'] = $propAtama['老頭牌'] ? '役牌':'断公牌';
+    $propAtama['tensu'] = $propAtama['老頭牌'] ? 2 : 0;
+    $慣子数 = 0;
     foreach(range(1,4) as $n) {
-      $prop[$n][  'koutsu'] = rand(0,1) == 1 ? true : false ;
-      $prop[$n][   'ankou'] = rand(0,1) == 1 ? true : false ;
-      $prop[$n]['ichikyui'] = rand(0,1) == 1 ? true : false ;
-      if ($prop[$n][  'koutsu']) {
-        $prop[$n]['kann'] = rand(0,9) == 0 ? true : false ;
+      $prop[$n]['刻子順子'] = rand(0,1) == 1 ? true : false ;
+      $prop[$n]['暗刻明刻'] = rand(0,1) == 1 ? true : false ;
+      $prop[$n]['老頭牌']   = rand(0,1) == 1 ? true : false ;
+      if ($prop[$n]['刻子順子']) {
+        if ($慣子数 >= 3) {
+          $prop[$n]['慣子'] = false;
+        } else {
+          $prop[$n]['慣子']   = rand(0,9) == 0 ? true : false ;
+        }
+        if ($prop[$n]['慣子']) {
+          $慣子数++;
+        }
       } else {
-        $prop[$n]['kann'] =  false ;
+        $prop[$n]['慣子']   =  false ;
       }
-      $pairs[$n]= koutsu($prop[$n]); 
+      $pairs[$n]= 刻子($prop[$n]); 
     }
     $sum = 0;
     $p1 = $p2 = $p3 = $p4 = '';
     foreach(range(1,4) as $n) {
-      $prop[$n][  'koutsuKANJI'] = $prop[$n][  'koutsu'] ? '刻' : '順';
-      $prop[$n][   'ankouKANJI'] = $prop[$n][   'ankou'] ?  '暗' : '明';
-      $prop[$n]['ichikyuiKANJI'] = $prop[$n]['ichikyui'] ?  '断' : '老';
-      $prop[$n][    'kannKANJI'] = $prop[$n][    'kann'] ?  '槓' : '  ';
-      $kind = $prop[$n]['kann'] ? '慣' : $prop[$n]['koutsuKANJI'];
-      $prop[$n]['KANJI'] =
-          $prop[$n]['ichikyuiKANJI'] .
-          $prop[$n][   'ankouKANJI'] .
-          $kind ;
+      $prop[$n]['刻子順子漢字'] = $prop[$n]['刻子順子'] ? '刻' : '順';
+      $prop[$n]['暗刻明刻漢字'] = $prop[$n]['暗刻明刻'] ? '暗' : '明';
+      $prop[$n]['老頭牌漢字']   = $prop[$n]['老頭牌']   ? '断' : '老';
+      $prop[$n]['慣子漢字']     = $prop[$n]['慣子']     ? '槓' : '  ';
+      $kind = $prop[$n]['慣子'] ? '慣' : $prop[$n]['刻子順子漢字'];
+      $prop[$n]['漢字'] = $prop[$n]['老頭牌漢字'] .  $prop[$n]['暗刻明刻漢字'] .  $kind ;
       $sum += $pairs[$n];
     }
     // 待ち
@@ -74,9 +132,9 @@ function QuizeKoutsu() {
     $上り方 = rand(7,8);
 
     echo '======問題============================'. PHP_EOL;
-    echo sprintf("[%s:??]",$propAtama['KANJI']);
+    echo sprintf("[%s:??]",$propAtama['漢字']);
     foreach(range(1,4) as $n) {
-      echo sprintf("[%s:??]", $prop[$n]['KANJI']);
+      echo sprintf("[%s:??]", $prop[$n]['漢字']);
     }
     echo PHP_EOL;
     echo sprintf("待ち:%s = ??点, 上り方:%s = ??点",
@@ -91,9 +149,9 @@ function QuizeKoutsu() {
     // Anser
     echo '======回答============================'. PHP_EOL;
     echo sprintf("[%s:%02d]",
-            $propAtama['KANJI'], $propAtama['tensu']);
+            $propAtama['漢字'], $propAtama['tensu']);
     foreach(range(1,4) as $n) {
-      echo sprintf("[%s:%02d]", $prop[$n]['KANJI'], $pairs[$n]);
+      echo sprintf("[%s:%02d]", $prop[$n]['漢字'], $pairs[$n]);
     }
     echo PHP_EOL;
     echo sprintf("待ち:%s = %d点, 上り方:%s = %d点",
@@ -108,19 +166,23 @@ function QuizeKoutsu() {
       $基本点+
       $待ちと上り方[$待ち]['ten'] +
       $待ちと上り方[$上り方]['ten'] + 
-      $propAtama['ichikyui'] ; 
+      $propAtama['老頭牌'] ; 
 
-    echo sprintf("合計:%d点 = 基本点:%d点 刻子:%d点 雀頭:%d点 待ち:%d点 上り:%d点",
+    echo sprintf("合計:%d点=基本点:%d点 刻子:%d点 雀頭:%d点",
       $sumAll,
       $基本点,
       $sum,
-      $propAtama['ichikyui'],
+      $propAtama['老頭牌']);
+    echo PHP_EOL;
+    echo sprintf("待ち:%s=%d点, 上り方:%s=%d点",
+      $待ちと上り方[$待ち]['mati'], 
       $待ちと上り方[$待ち]['ten'],
+      $待ちと上り方[$上り方]['agari'],
       $待ちと上り方[$上り方]['ten']);
     echo PHP_EOL;
+    echo PHP_EOL;
     echo sprintf("最後に切り上げて、上り点は%2d点です。",
-      round($sumAll+4, -1));
-
+      点数丸め($sumAll));
     echo PHP_EOL;
 
     $command = trim(fgets(STDIN));
@@ -129,6 +191,6 @@ function QuizeKoutsu() {
   }
 }
 
-QuizeKoutsu();
+点数計算クイズ();
 
 

@@ -51,9 +51,9 @@ function QuizeKoutsu() {
       $prop[$n][    'kannKANJI'] = $prop[$n][    'kann'] ?  '槓' : '  ';
       $kind = $prop[$n]['kann'] ? '慣' : $prop[$n]['koutsuKANJI'];
       $prop[$n]['KANJI'] =
+          $prop[$n]['ichikyuiKANJI'] .
           $prop[$n][   'ankouKANJI'] .
-          $kind .
-          $prop[$n]['ichikyuiKANJI'];
+          $kind ;
       $sum += $pairs[$n];
     }
     // 待ち

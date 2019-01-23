@@ -24,39 +24,6 @@ function atama($prop) {
   return $point;
 }
 
-function TestKoutsu() {
-  $prop = [];
-  $pairs= [];
-  foreach(range(1,8) as $k) {
-    $propAtama['ichikyui'] = rand(0,1) == 1 ? 2 : 0;
-    $pAtama = $propAtama['ichikyui']  ?  '断' : '老';
-    echo sprintf("[%s:%02d]",$pAtama, $propAtama['ichikyui'] );
-    foreach(range(1,4) as $n) {
-      $prop[  'koutsu'] = rand(0,1) == 1 ? true : false ;
-      $prop[   'ankou'] = rand(0,1) == 1 ? true : false ;
-      $prop['ichikyui'] = rand(0,1) == 1 ? true : false ;
-      $prop[    'kann'] = rand(0,1) == 1 ? true : false ;
-      $pairs[$n]= koutsu($prop); 
-    }
-    $sum = 0;
-    foreach(range(1,4) as $n) {
-      $p1 = $prop[  'koutsu']  ? '刻' : '順';
-      $p2 = $prop[   'ankou']  ?  '暗' : '明';
-      $p3 = $prop['ichikyui']  ?  '断' : '老';
-      $p4 = $prop[    'kann']  ?  '槓' : '  ';
-      $sum += $pairs[$n];
-      echo sprintf("[%s%s%s%S:%02d]",$p1, $p2, $p3, $p4, $pairs[$n]);
-    }
-    // 待ち
-    $待ち = [];
-    $待ち['待ち'] = rand(0,1) == 1 ? 2 : 0;
-    $待ち['自摸'] = rand(0,1) == 1 ? 2 : 0;
-    $待ち点 = $待ち['待ち'] + $待ち['自摸'];
-
-    echo '待ち' . $待ち点 . '  sum = ' . $sum . PHP_EOL. PHP_EOL;
-  }
-}
-
 function QuizeKoutsu() {
   foreach(range(1,8) as $k) {
     $prop = [];
@@ -109,7 +76,6 @@ function QuizeKoutsu() {
     echo '======問題============================'. PHP_EOL;
     echo sprintf("[%s:??]",$propAtama['KANJI']);
     foreach(range(1,4) as $n) {
-   //   echo sprintf("[%s%s%s%S:??]",$p1, $p2, $p3, $p4);
       echo sprintf("[%s:??]", $prop[$n]['KANJI']);
     }
     echo PHP_EOL;
@@ -127,7 +93,6 @@ function QuizeKoutsu() {
     echo sprintf("[%s:%02d]",
             $propAtama['KANJI'], $propAtama['tensu']);
     foreach(range(1,4) as $n) {
-    //  echo sprintf("[%s%s%s%S:%02d]",$p1, $p2, $p3, $p4, $pairs[$n]);
       echo sprintf("[%s:%02d]", $prop[$n]['KANJI'], $pairs[$n]);
     }
     echo PHP_EOL;

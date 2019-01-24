@@ -68,10 +68,6 @@ function 刻子($prop) {
   $得点 *= $prop['慣子']      ? 4 : 1;
   return $得点;
 }
-function 雀頭($prop) {
-  $得点 = $prop['老頭牌']  ? 2 : 0;
-  return $得点;
-}
 
 function 点数丸め($n) {
   return round($n+4, -1);
@@ -82,8 +78,8 @@ function 点数計算クイズ() {
     $prop = [];
     $pairs= [];
     $propAtama['老頭牌'] = rand(0,1) == 1 ? true:false;
-    $propAtama['漢字'] = $propAtama['老頭牌'] ? '役牌':'断公牌';
-    $propAtama['tensu'] = $propAtama['老頭牌'] ? 2 : 0;
+    $propAtama['漢字'] = $propAtama['老頭牌'] ? '役牌  ':'断公牌';
+    $propAtama['点'] = $propAtama['老頭牌'] ? 2 : 0;
     $慣子数 = 0;
     foreach(range(1,4) as $n) {
       $prop[$n]['刻子順子'] = rand(0,1) == 1 ? true : false ;
@@ -93,7 +89,7 @@ function 点数計算クイズ() {
         if ($慣子数 >= 3) {
           $prop[$n]['慣子'] = false;
         } else {
-          $prop[$n]['慣子']   = rand(0,9) == 0 ? true : false ;
+          $prop[$n]['慣子']   = rand(0,9) >= 8 ? true : false ;
         }
         if ($prop[$n]['慣子']) {
           $慣子数++;
@@ -101,14 +97,14 @@ function 点数計算クイズ() {
       } else {
         $prop[$n]['慣子']   =  false ;
       }
-      $pairs[$n]= 刻子($prop[$n]); 
+      $cp刻子=$prop[$n]; 
+      $pairs[$n]= 刻子($cp刻子); 
     }
     $sum = 0;
-    $p1 = $p2 = $p3 = $p4 = '';
     foreach(range(1,4) as $n) {
       $prop[$n]['刻子順子漢字'] = $prop[$n]['刻子順子'] ? '刻' : '順';
       $prop[$n]['暗刻明刻漢字'] = $prop[$n]['暗刻明刻'] ? '暗' : '明';
-      $prop[$n]['老頭牌漢字']   = $prop[$n]['老頭牌']   ? '断' : '老';
+      $prop[$n]['老頭牌漢字']   = $prop[$n]['老頭牌']   ? '老' : '断';
       $prop[$n]['慣子漢字']     = $prop[$n]['慣子']     ? '槓' : '  ';
       $kind = $prop[$n]['慣子'] ? '慣' : $prop[$n]['刻子順子漢字'];
       $prop[$n]['漢字'] = $prop[$n]['老頭牌漢字'] .  $prop[$n]['暗刻明刻漢字'] .  $kind ;
@@ -117,71 +113,79 @@ function 点数計算クイズ() {
     // 待ち
     $待ちと上り方 = [];
     $待ちと上り方 = [
-     0 => [ 'mati' => '両面待ち',                  'ten' => 0 ],
-     1 => [ 'mati' => 'カンチャン待ち',            'ten' => 2 ],
-     2 => [ 'mati' => 'ペンチャン待ち',            'ten' => 2 ],
-     3 => [ 'mati' => 'シャンポン待ち(タンヤオ牌)','ten' => 0 ],
-     4 => [ 'mati' => 'シャンポン待ち(１９牌字牌)','ten' => 0 ],
-     5 => [ 'mati' => 'アタマ待ち(タンヤオ牌)',    'ten' => 2 ],
-     6 => [ 'mati' => 'アタマ待ち(１９牌字牌)',    'ten' => 2 ],
-     7 => [ 'agari' => 'ロン',                      'ten' => 0 ],
-     8 => [ 'agari' => '自摸',                      'ten' => 2 ],
+     0 => [ 'mati' => '両面待ち',                  '点' => 0 ],
+     1 => [ 'mati' => 'カンチャン待ち',            '点' => 2 ],
+     2 => [ 'mati' => 'ペンチャン待ち',            '点' => 2 ],
+     3 => [ 'mati' => 'シャンポン待ち(タンヤオ牌)','点' => 0 ],
+     4 => [ 'mati' => 'シャンポン待ち(１９牌字牌)','点' => 0 ],
+     5 => [ 'mati' => 'アタマ待ち(タンヤオ牌)',    '点' => 2 ],
+     6 => [ 'mati' => 'アタマ待ち(１９牌字牌)',    '点' => 2 ],
+     7 => [ 'agari' => 'ロン',                      '点' => 0 ],
+     8 => [ 'agari' => '面前自摸',                      '点' => 2 ],
    ];
 
     $待ち   = rand(0,6);
     $上り方 = rand(7,8);
 
     echo '======問題============================'. PHP_EOL;
-    echo sprintf("[%s:??]",$propAtama['漢字']);
-    foreach(range(1,4) as $n) {
-      echo sprintf("[%s:??]", $prop[$n]['漢字']);
-    }
+    echo sprintf("雀頭：[%s]  = ??点",$propAtama['漢字']);
     echo PHP_EOL;
-    echo sprintf("待ち:%s = ??点, 上り方:%s = ??点",
-      $待ちと上り方[$待ち]['mati'], 
-      $待ちと上り方[$上り方]['agari']
-    ). PHP_EOL;
+    foreach(range(1,4) as $n) {
+      echo sprintf("    ：[%s]  = ??点", $prop[$n]['漢字']);
+    echo PHP_EOL;
+    }
+    echo sprintf("待ち牌:%s = ??点", $待ちと上り方[$待ち]['mati']);
+    echo PHP_EOL;
+    echo sprintf("上り方:%s = ??点", $待ちと上り方[$上り方]['agari']);
+    echo PHP_EOL;
     echo '      ========== 上り点は？=========='. PHP_EOL;
     $command = trim(fgets(STDIN));
     echo PHP_EOL;
     if ($command == "q") { break; }
 
-    // Anser
     echo '======回答============================'. PHP_EOL;
-    echo sprintf("[%s:%02d]",
-            $propAtama['漢字'], $propAtama['tensu']);
-    foreach(range(1,4) as $n) {
-      echo sprintf("[%s:%02d]", $prop[$n]['漢字'], $pairs[$n]);
-    }
+    echo sprintf("雀頭：[%s]  = %02d点",
+            $propAtama['漢字'], $propAtama['点']);
     echo PHP_EOL;
-    echo sprintf("待ち:%s = %d点, 上り方:%s = %d点",
-      $待ちと上り方[$待ち]['mati'], 
-      $待ちと上り方[$待ち]['ten'], 
-      $待ちと上り方[$上り方]['agari'], 
-      $待ちと上り方[$上り方]['ten'] 
-    ). PHP_EOL;
+    foreach(range(1,4) as $n) {
+      echo sprintf("    ：[%s]  = %02d点", $prop[$n]['漢字'], $pairs[$n]);
+      echo PHP_EOL;
+    }
+    echo sprintf("待ち牌:%s = % 2d点", 
+      $待ちと上り方[$待ち]['mati'],
+      $待ちと上り方[$待ち]['点']);
+    echo PHP_EOL;
+      echo sprintf("上り方:%s = % 2d点", 
+        $待ちと上り方[$上り方]['agari'],
+      $待ちと上り方[$上り方]['点'] );
+    echo PHP_EOL;
 
+    echo '======集計====='.PHP_EOL;
     $基本点 = 20;
     $sumAll = $sum + 
       $基本点+
-      $待ちと上り方[$待ち]['ten'] +
-      $待ちと上り方[$上り方]['ten'] + 
-      $propAtama['老頭牌'] ; 
+      $待ちと上り方[$待ち]['点'] +
+      $待ちと上り方[$上り方]['点'] + 
+      $propAtama['点'] ; 
 
-    echo sprintf("合計:%d点=基本点:%d点 刻子:%d点 雀頭:%d点",
-      $sumAll,
-      $基本点,
-      $sum,
-      $propAtama['老頭牌']);
+    echo sprintf("基本点:%d点", $基本点);
     echo PHP_EOL;
-    echo sprintf("待ち:%s=%d点, 上り方:%s=%d点",
+    echo sprintf("刻子  :%d点", $sum);
+    echo PHP_EOL;
+    echo sprintf("雀頭  :%d点", $propAtama['点']);
+    echo PHP_EOL;
+    echo sprintf("待ち:%s=%d点",
       $待ちと上り方[$待ち]['mati'], 
-      $待ちと上り方[$待ち]['ten'],
+      $待ちと上り方[$待ち]['点']);
+    echo PHP_EOL;
+    echo sprintf("上り方:%s=%d点",
       $待ちと上り方[$上り方]['agari'],
-      $待ちと上り方[$上り方]['ten']);
+      $待ちと上り方[$上り方]['点']);
     echo PHP_EOL;
+    echo '==========='.PHP_EOL;
+    echo sprintf("合計  :%d点", $sumAll);
     echo PHP_EOL;
-    echo sprintf("最後に切り上げて、上り点は%2d点です。",
+    echo sprintf("切り上げて、上り点は%2d点です。",
       点数丸め($sumAll));
     echo PHP_EOL;
 
